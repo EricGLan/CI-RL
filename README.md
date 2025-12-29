@@ -1,5 +1,9 @@
 <h1 align="center">Contextual Integrity in LLMs via Reasoning and Reinforcement Learning</h1>
 
+<p align="center">
+  <strong>NeurIPS 2025</strong>
+</p>
+
 <div align="center">
 <a href='https://arxiv.org/abs/2506.04245'><img src='https://img.shields.io/badge/Paper-Arxiv-red.svg?style=for-the-badge&logo=arxiv&logoColor=white'></a> 
 <a href='https://huggingface.co/papers/2506.04245'><img src='https://img.shields.io/badge/Paper-Hugging_Face-yellow.svg?style=for-the-badge&logo=huggingface&logoColor=%23FFD21E'></a>
