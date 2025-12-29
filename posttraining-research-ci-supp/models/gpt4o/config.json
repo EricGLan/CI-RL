@@ -1,0 +1,7 @@
+{
+  "endpoint": "https://aidaihub2294673195.openai.azure.com/",
+  "deployment": "gpt-4o",
+  "batch_deployment": "gpt-4o-batch",
+  "api_version": "2025-01-01-preview",
+  "engine": "AzureOpenAI"
+}

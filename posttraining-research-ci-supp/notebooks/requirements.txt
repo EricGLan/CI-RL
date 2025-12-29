@@ -1,0 +1,5 @@
+datasets
+matplotlib
+numpy
+pandas
+git+https://github.com/microsoft/responsible-ai-toolbox-privacy.git#egg=privacy_estimates[pipelines]

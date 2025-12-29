@@ -1,0 +1,6 @@
+{
+  "endpoint": "https://aidaihub2294673195.openai.azure.com/",
+  "deployment": "o1-mini",
+  "api_version": "2025-01-01-preview",
+  "engine": "AzureOpenAI"
+}

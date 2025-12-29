@@ -1,0 +1,6 @@
+{
+  "endpoint": "https://aidaihub2294673195.openai.azure.com/",
+  "deployment": "Phi-4-reasoning",
+  "api_version": "2024-05-01-preview",
+  "engine": "AzureOpenAI"
+}

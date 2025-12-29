@@ -1,0 +1,28 @@
+$schema: https://azuremlschemas.azureedge.net/latest/pipelineJob.schema.json
+type: pipeline
+display_name: privacylens-eval-dev
+experiment_name: contextual-integrity
+
+settings:
+  default_compute: azureml:NC24ads-GWC-hipri
+
+inputs:
+  model:
+    type: uri_folder
+    path: "azureml:Qwen-Qwen2_5-7B-Instruct:1"
+  engine:
+    type: string
+    default: "VLLM"
+  cot: "Yes"
+
+jobs:
+  privacylens:
+    type: command
+    component: ../../../components/privacylens/component_spec.yaml
+    inputs:
+      model: ${{parent.inputs.model}}
+      engine: ${{parent.inputs.engine}}
+      use_think_format: ${{parent.inputs.cot}}
+      judge:
+        type: uri_folder
+        path: ../models/gpt4o
