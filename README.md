@@ -9,6 +9,11 @@
 > [!NOTE]
 > The description of this repository is still in progress.
 
+## 🧭 External Links
+
+- 🗂️ [Synthetic Dataset](https://huggingface.co/datasets/huseyinatahaninan/ContextualIntegritySyntheticDataset)
+- 🧩 [Checkpoint trained from Qwen2.5-7B-Instruct](https://huggingface.co/huseyinatahaninan/Qwen2.5-7B-Instruct-CI)
+- 📝 [Blog Coverage](https://www.microsoft.com/en-us/research/blog/reducing-privacy-leaks-in-ai-two-approaches-to-contextual-integrity/)
 
 - **Training and Evaluation**: In ./verl-supp folder.
 
