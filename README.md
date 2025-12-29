@@ -11,6 +11,7 @@
 
 ## 🧭 External Links
 
+- 🔥 This work has been published at [NeurIPS 2025](https://openreview.net/forum?id=Xm57IXqU0n)
 - 🗂️ [Synthetic Dataset](https://huggingface.co/datasets/huseyinatahaninan/ContextualIntegritySyntheticDataset)
 - 🧩 [Checkpoint trained from Qwen2.5-7B-Instruct](https://huggingface.co/huseyinatahaninan/Qwen2.5-7B-Instruct-CI)
 - 📝 [Blog Coverage](https://www.microsoft.com/en-us/research/blog/reducing-privacy-leaks-in-ai-two-approaches-to-contextual-integrity/)
