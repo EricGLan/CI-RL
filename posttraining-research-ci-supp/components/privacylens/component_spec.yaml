@@ -1,0 +1,62 @@
+$schema: https://azuremlschemas.azureedge.net/latest/commandComponent.schema.json
+type: command
+
+name: posttraining__privacylens
+display_name: privacylens
+version: 1dev1
+
+description: "Run Privacy Lens evaluation"
+
+inputs:
+  model:
+    type: uri_folder
+    description: "Path to the model in HF format"
+  judge:
+    type: uri_folder
+    description: "Path to the judge"
+  use_think_format:
+    type: string
+    description: "Whether to use the think/answer format. Options: Yes, No. Default: No."
+  engine:
+    type: string
+    description: "The model engine to use. Default VLLM"
+    enum: ["VLLM", "HuggingFace", "AzureOpenAI"]
+outputs:
+  results:
+    type: uri_folder
+    description: Output directory
+
+
+code: ./
+
+additional_includes:
+  - ../../src/model_engines
+
+command: >-
+  python evaluation/get_final_action.py
+  --input-path data/main_data.json
+  --output-path ${{outputs.results}}/privacy_enhanced.csv
+  --full-output-path ${{outputs.results}}/privacy_enhanced_full.json
+  --model ${{inputs.model}}
+  --use-think-format ${{inputs.use_think_format}}
+  --engine ${{inputs.engine}}
+  --prompt-type privacy_enhanced --start-index 0 --num -1
+
+  python evaluation/evaluate_final_action.py 
+  --data-path data/main_data.json 
+  --action-path ${{outputs.results}}/privacy_enhanced.csv 
+  --step 'helpfulness' 
+  --output-path ${{outputs.results}}/privacy_enhanced_judge_helpfulness.csv 
+  --endpoint-path ${{inputs.judge}}
+
+  python evaluation/evaluate_final_action.py 
+  --data-path data/main_data.json 
+  --action-path ${{outputs.results}}/privacy_enhanced.csv 
+  --step 'judge_leakage' 
+  --output-path ${{outputs.results}}/privacy_enhanced_judge_leakage.csv 
+  --helpfulness-score-path ${{outputs.results}}/privacy_enhanced_judge_helpfulness.csv
+  --endpoint-path ${{inputs.judge}}
+
+environment:
+  image: mcr.microsoft.com/azureml/openmpi5.0-cuda12.4-ubuntu22.04
+  conda_file: ./probing_environment.yaml

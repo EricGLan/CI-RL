@@ -1,0 +1,34 @@
+$schema: https://azuremlschemas.azureedge.net/latest/commandComponent.schema.json
+type: command
+
+name: privacylens_probing
+display_name: privacylens_probing
+version: 1
+
+description: "Run Privacy Lens probing evaluation"
+
+inputs:
+  model:
+    type: uri_folder
+    description: "Path to the model in HF format"
+  use_think_format:
+    type: string
+    description: "Whether to use the think/answer format. Options: Yes, No. Default: No."
+outputs:
+  results:
+    type: uri_folder
+    description: Output directory
+
+code: ./
+
+command: >-
+  python evaluation/probing.py
+  --input-path data/main_data.json
+  --output-path ${{outputs.results}}/probing_results.csv
+  --model ${{inputs.model}}
+  --use-think-format ${{inputs.use_think_format}}
+  --start-index 0 --num -1
+
+environment:
+  image: mcr.microsoft.com/azureml/openmpi5.0-cuda12.4-ubuntu22.04
+  conda_file: ./probing_environment.yaml
