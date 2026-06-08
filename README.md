@@ -20,8 +20,6 @@
 
 <h2 id="overview">📖 Overview</h2>
 
-## Overview
-
 This repository contains the code and resources for **Contextual Integrity in LLMs via Reasoning and Reinforcement Learning**.
 
 As large language model agents increasingly act on behalf of users, they must decide not only *what* information is useful for completing a task, but also *whether* that information is appropriate to disclose in the given context. This work studies this problem through the lens of **Contextual Integrity (CI)**, where privacy is defined as appropriate information flow according to context-specific norms.
