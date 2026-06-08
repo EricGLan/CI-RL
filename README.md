@@ -364,17 +364,6 @@ This work studies how to reduce privacy leakage in LLM agents by improving their
 
 ---
 
-## External Links
-
-* Paper: [https://arxiv.org/abs/2506.04245](https://arxiv.org/abs/2506.04245)
-* NeurIPS 2025 OpenReview: [https://openreview.net/forum?id=Xm57IXqU0n](https://openreview.net/forum?id=Xm57IXqU0n)
-* Hugging Face paper page: [https://huggingface.co/papers/2506.04245](https://huggingface.co/papers/2506.04245)
-* Synthetic dataset: [https://huggingface.co/datasets/huseyinatahaninan/ContextualIntegritySyntheticDataset](https://huggingface.co/datasets/huseyinatahaninan/ContextualIntegritySyntheticDataset)
-* Released checkpoint: [https://huggingface.co/huseyinatahaninan/Qwen2.5-7B-Instruct-CI](https://huggingface.co/huseyinatahaninan/Qwen2.5-7B-Instruct-CI)
-* Microsoft Research blog: [https://www.microsoft.com/en-us/research/blog/reducing-privacy-leaks-in-ai-two-approaches-to-contextual-integrity/](https://www.microsoft.com/en-us/research/blog/reducing-privacy-leaks-in-ai-two-approaches-to-contextual-integrity/)
-
----
-
 ## Citation
 
 If you find this repository useful, please cite our paper:
