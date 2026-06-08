@@ -10,9 +10,6 @@
 <a href='LICENSE'><img src='https://img.shields.io/badge/License-Apache_2.0-blue.svg?style=for-the-badge'></a>
 </div>
 
-> [!NOTE]
-> The description of this repository is still in progress.
-
 ## 🧭 External Links
 
 - 🔥 This work has been published at [NeurIPS 2025](https://openreview.net/forum?id=Xm57IXqU0n)
@@ -23,658 +20,384 @@
 
 <h2 id="overview">📖 Overview</h2>
 
+## Overview
+
+This repository contains the code and resources for **Contextual Integrity in LLMs via Reasoning and Reinforcement Learning**.
+
+As large language model agents increasingly act on behalf of users, they must decide not only *what* information is useful for completing a task, but also *whether* that information is appropriate to disclose in the given context. This work studies this problem through the lens of **Contextual Integrity (CI)**, where privacy is defined as appropriate information flow according to context-specific norms.
+
+We show that LLMs can improve their contextual privacy behavior by explicitly reasoning about contextual integrity and by further training with reinforcement learning. Using a synthetic dataset of around 700 diverse CI examples, our method reduces inappropriate information disclosure while preserving task performance. The improvements also transfer to external CI benchmarks such as PrivacyLens, which evaluates privacy leakage in assistant actions and tool calls.
+
+---
+
+## What is Contextual Integrity?
+
+Contextual Integrity is a theory of privacy that asks whether an information flow is appropriate within a given social context. A flow is characterized by:
+
+* **Context**: the situation or task being performed
+* **Sender**: the person or entity sharing information
+* **Recipient**: the person or entity receiving information
+* **Data subject**: the person whom the information is about
+* **Information type**: the kind of information being shared
+* **Transmission principle**: the norm or condition governing the flow, such as confidentiality, consent, or proportionality
+
+In this work, an AI assistant is asked to complete realistic tasks such as writing emails, sending messages, booking appointments, or responding to requests. The assistant has access to user information, some of which is appropriate to share and some of which should remain private. The goal is to train and evaluate whether the assistant can reason about the context and avoid leaking disallowed information.
+
+---
+
+## Main Components
+
+This repository contains two main parts:
+
 - **Training and Evaluation**: In ./verl-supp folder.
 
 - **Data_Generation and PrivacyLens_Evaluation**: In ./posttraining-research-ci-supp folder.
 
+```text
+.
+├── posttraining-research-ci-supp/
+│   ├── datasets/
+│   │   └── synthetic/
+│   │       └── generate_new_data_from_seeds.py
+│   ├── components/
+│   │   ├── privacylens/
+│   │   │   ├── data/
+│   │   │   ├── data_construction/
+│   │   │   ├── evaluation/
+│   │   │   ├── helper/
+│   │   │   └── readme.md
+│   │   └── training/
+│   │       ├── changes.diff
+│   │       ├── README.md
+│   │       └── run_rl_for_contextual_integrity.sh
+│   ├── experiments/
+│   │   ├── privacylens.sh
+│   │   └── privacylens.yaml
+│   ├── models/
+│   ├── notebooks/
+│   ├── src/
+│   └── README.md
+└── README.md
+```
 
+### 1. Synthetic CI data generation
+
+The synthetic dataset generation code is under:
+
+```text
+posttraining-research-ci-supp/datasets/synthetic/
 ```
-└── code
-    ├── posttraining-research-ci-supp
-    │   ├── components
-    │   │   ├── privacylens
-    │   │   │   ├── assets
-    │   │   │   │   └── overview.png
-    │   │   │   ├── component_spec.yaml
-    │   │   │   ├── data
-    │   │   │   │   ├── extensibility
-    │   │   │   │   │   ├── confide_subset.json
-    │   │   │   │   │   └── culturebank_subset.json
-    │   │   │   │   └── main_data.json
-    │   │   │   ├── data_construction
-    │   │   │   │   ├── format_trajectory.py
-    │   │   │   │   ├── format_vignette_for_trajectory_simulation.py
-    │   │   │   │   ├── seed_to_vignette.py
-    │   │   │   │   ├── simulate_trajectory.py
-    │   │   │   │   └── toolemu
-    │   │   │   │       ├── __init__.py
-    │   │   │   │       ├── agent_executor_builder.py
-    │   │   │   │       ├── agents
-    │   │   │   │       │   ├── __init__.py
-    │   │   │   │       │   ├── agent_executor.py
-    │   │   │   │       │   ├── agent_interface.md
-    │   │   │   │       │   ├── virtual_agent_executor.py
-    │   │   │   │       │   └── zero_shot_agent_with_toolkit.py
-    │   │   │   │       ├── dataloader.py
-    │   │   │   │       ├── executors
-    │   │   │   │       │   ├── __init__.py
-    │   │   │   │       │   ├── func_executor.py
-    │   │   │   │       │   └── prompt_executor.py
-    │   │   │   │       ├── prompts
-    │   │   │   │       │   ├── __init__.py
-    │   │   │   │       │   ├── agent
-    │   │   │   │       │   │   ├── __init__.py
-    │   │   │   │       │   │   ├── agent_naive.py
-    │   │   │   │       │   │   ├── agent_privacy_enhanced.py
-    │   │   │   │       │   │   └── shared.py
-    │   │   │   │       │   ├── globals.py
-    │   │   │   │       │   ├── principles.py
-    │   │   │   │       │   ├── README.md
-    │   │   │   │       │   └── simulator
-    │   │   │   │       │       ├── __init__.py
-    │   │   │   │       │       ├── privacy_adversarial.py
-    │   │   │   │       │       └── shared.py
-    │   │   │   │       ├── README.md
-    │   │   │   │       ├── tools
-    │   │   │   │       │   ├── __init__.py
-    │   │   │   │       │   ├── core_virtual_tools.py
-    │   │   │   │       │   ├── register.py
-    │   │   │   │       │   └── tool_interface.py
-    │   │   │   │       └── utils
-    │   │   │   │           ├── __init__.py
-    │   │   │   │           ├── agent.py
-    │   │   │   │           ├── colorful.py
-    │   │   │   │           ├── const.py
-    │   │   │   │           ├── convertion.py
-    │   │   │   │           ├── io.py
-    │   │   │   │           ├── langchain_utils.py
-    │   │   │   │           ├── llm.py
-    │   │   │   │           ├── misc.py
-    │   │   │   │           ├── my_typing.py
-    │   │   │   │           ├── parallel.py
-    │   │   │   │           └── tool.py
-    │   │   │   ├── evaluation
-    │   │   │   │   ├── evaluate_final_action.py
-    │   │   │   │   ├── get_final_action.py
-    │   │   │   │   ├── output
-    │   │   │   │   │   └── main_gpt4_o.csv
-    │   │   │   │   ├── output_action
-    │   │   │   │   │   ├── main_deepseek_naive_evaluate_leakage.json
-    │   │   │   │   │   ├── main_deepseek_naive_missing.json
-    │   │   │   │   │   ├── main_deepseek_naive.csv
-    │   │   │   │   │   ├── main_deepseek_privacy_enhanced.csv
-    │   │   │   │   │   ├── main_gpt4o_mini_naive_evaluate_leakage.json
-    │   │   │   │   │   ├── main_gpt4o_mini_naive.csv
-    │   │   │   │   │   ├── main_gpt4o_naive_evaluate_leakage.json
-    │   │   │   │   │   ├── main_gpt4o_naive.csv
-    │   │   │   │   │   ├── main_o1_mini_naive_evaluate_leakage.json
-    │   │   │   │   │   ├── main_o1_mini_naive.csv
-    │   │   │   │   │   ├── main_o1_mini_privacy_enhanced_evaluate_leakage.json
-    │   │   │   │   │   ├── main_o1_mini_privacy_enhanced.csv
-    │   │   │   │   │   └── main_qwen25_7b_instruct_privacy_enhanced.csv
-    │   │   │   │   ├── output_probing
-    │   │   │   │   │   ├── main_gpt4_o_mini.csv
-    │   │   │   │   │   ├── main_gpt4_o.csv
-    │   │   │   │   │   └── qwen25_7b_instruct.csv
-    │   │   │   │   └── probing.py
-    │   │   │   ├── helper
-    │   │   │   │   ├── inspect_data.py
-    │   │   │   │   ├── quick_start.ipynb
-    │   │   │   │   └── utils.py
-    │   │   │   ├── probing_component_spec.yaml
-    │   │   │   ├── probing_environment.yaml
-    │   │   │   ├── readme.md
-    │   │   │   └── requirements.txt
-    │   │   └── training
-    │   │       ├── changes.diff
-    │   │       ├── README.md
-    │   │       └── run_rl_for_contextual_integrity.sh
-    │   ├── datasets
-    │   │   └── synthetic
-    │   │       ├── dataset.json
-    │   │       └── generate_new_data_from_seeds.py
-    │   ├── experiments
-    │   │   ├── privacylens.sh
-    │   │   └── privacylens.yaml
-    │   ├── models
-    │   │   ├── gpt4o
-    │   │   │   └── config.json
-    │   │   ├── mai-ds-r1
-    │   │   │   └── config.json
-    │   │   ├── o1mini
-    │   │   │   └── config.json
-    │   │   └── phi4-reasoning
-    │   │       └── config.json
-    │   ├── notebooks
-    │   │   ├── confaide.ipynb
-    │   │   ├── explore_single_turn_conversations.ipynb
-    │   │   ├── explore_taskmaster.ipynb
-    │   │   ├── inspect_outputs.ipynb
-    │   │   ├── privacylens.ipynb
-    │   │   ├── README.md
-    │   │   ├── requirements.txt
-    │   │   └── sample_inference.ipynb
-    │   ├── README.md
-    │   └── src
-    │       ├── data
-    │       │   └── agent.py
-    │       └── model_engines
-    │           ├── __init__.py
-    │           ├── base.py
-    │           ├── huggingface_engine.py
-    │           ├── openai_engine.py
-    │           ├── utils.py
-    │           └── vllm.py
-    ├── README.md
-    └── verl-supp
-        ├── docker
-        │   ├── Dockerfile.megatron
-        │   ├── Dockerfile.ngc.vllm
-        │   ├── Dockerfile.ngc.vllm0.8
-        │   ├── Dockerfile.ngc.vllm0.8.sagemaker
-        │   ├── Dockerfile.rocm
-        │   └── Dockerfile.vemlp.vllm.te
-        ├── docs
-        │   ├── _static
-        │   │   └── logo.png
-        │   ├── advance
-        │   │   ├── checkpoint.rst
-        │   │   ├── dpo_extension.rst
-        │   │   ├── fsdp_extension.rst
-        │   │   ├── megatron_extension.rst
-        │   │   └── placement.rst
-        │   ├── amd_tutorial
-        │   │   └── amd_build_dockerfile_page.rst
-        │   ├── conf.py
-        │   ├── data.rst
-        │   ├── examples
-        │   │   ├── config.rst
-        │   │   ├── gsm8k_example.rst
-        │   │   └── ppo_code_architecture.rst
-        │   ├── experiment
-        │   │   └── ppo.rst
-        │   ├── faq
-        │   │   └── faq.rst
-        │   ├── hybrid_flow.rst
-        │   ├── index.rst
-        │   ├── Makefile
-        │   ├── perf
-        │   │   └── perf_tuning.rst
-        │   ├── preparation
-        │   │   ├── prepare_data.rst
-        │   │   └── reward_function.rst
-        │   ├── README_vllm0.7.md
-        │   ├── README_vllm0.8.md
-        │   ├── README.md
-        │   ├── requirements-docs.txt
-        │   ├── start
-        │   │   ├── install.rst
-        │   │   ├── multinode.rst
-        │   │   └── quickstart.rst
-        │   └── workers
-        │       ├── fsdp_workers.rst
-        │       ├── megatron_workers.rst
-        │       └── ray_trainer.rst
-        ├── examples
-        │   ├── checkpoint
-        │   │   ├── run_deepseek_megatron_ckpt.sh
-        │   │   └── run_qwen_megatron_ckpt.sh
-        │   ├── data_preprocess
-        │   │   ├── contextual_integrity.py
-        │   │   ├── full_hh_rlhf.py
-        │   │   ├── geo3k.py
-        │   │   ├── gsm8k.py
-        │   │   ├── hellaswag.py
-        │   │   └── math_dataset.py
-        │   ├── generation
-        │   │   ├── run_deepseek_v2_lite_math.sh
-        │   │   └── run_deepseek7b_mutli_node.sh
-        │   ├── grpo_trainer
-        │   │   ├── run_deepseek7b_llm_math_megatron.sh
-        │   │   ├── run_deepseek7b_llm_math.sh
-        │   │   ├── run_deepseek7b_llm_megatron.sh
-        │   │   ├── run_deepseek7b_llm_seq_balance.sh
-        │   │   ├── run_deepseek7b_llm.sh
-        │   │   ├── run_qwen2_5_vl-7b.sh
-        │   │   ├── run_qwen2-7b_math_megatron.sh
-        │   │   ├── run_qwen2-7b_math.sh
-        │   │   ├── run_qwen2-7b_megatron.sh
-        │   │   ├── run_qwen2-7b_seq_balance.sh
-        │   │   └── run_qwen2-7b.sh
-        │   ├── ppo_trainer
-        │   │   ├── run_deepseek_full_hh_rlhf.sh
-        │   │   ├── run_deepseek_math_gsm8k_megatron.sh
-        │   │   ├── run_deepseek_megatron.sh
-        │   │   ├── run_deepseek7b_llm_modelscope.sh
-        │   │   ├── run_deepseek7b_llm_sp2.sh
-        │   │   ├── run_deepseek7b_llm.sh
-        │   │   ├── run_gemma.sh
-        │   │   ├── run_qwen2-7b_math_gsm8k_megatron.sh
-        │   │   ├── run_qwen2-7b_megatron.sh
-        │   │   ├── run_qwen2-7b_rm_seq_balance.sh
-        │   │   ├── run_qwen2-7b_rm.sh
-        │   │   ├── run_qwen2-7b_seq_balance.sh
-        │   │   ├── run_qwen2.5-32b.sh
-        │   │   └── verl_getting_started.ipynb
-        │   ├── ray
-        │   │   └── tutorial.ipynb
-        │   ├── remax_trainer
-        │   │   ├── run_qwen2.5-3b_seq_balance.sh
-        │   │   └── run_qwen2.5-7b_seq_balance.sh
-        │   ├── rloo_trainer
-        │   │   └── run_qwen2-7b.sh
-        │   ├── sft
-        │   │   └── gsm8k
-        │   │       ├── run_deepseek_6b7.sh
-        │   │       ├── run_gemma_2b.sh
-        │   │       ├── run_gemma_7b.sh
-        │   │       ├── run_qwen_05_peft.sh
-        │   │       ├── run_qwen_05_sp2_liger.sh
-        │   │       └── run_qwen_05_sp2.sh
-        │   ├── slurm
-        │   │   └── ray_on_slurm.slurm
-        │   └── split_placement
-        │       ├── config
-        │       │   └── ppo_trainer_split.yaml
-        │       ├── main_ppo_split.py
-        │       ├── README.md
-        │       ├── run_deepseek7b_llm.sh
-        │       └── split_monkey_patch.py
-        ├── LICENSE
-        ├── Notice.txt
-        ├── patches
-        │   └── megatron_v4.patch
-        ├── pyproject.toml
-        ├── README.md
-        ├── recipe
-        │   └── prime
-        │       ├── __init__.py
-        │       ├── config
-        │       │   └── prime_trainer.yaml
-        │       ├── main_prime.py
-        │       ├── prime_core_algos.py
-        │       ├── prime_dp_rm.py
-        │       ├── prime_fsdp_workers.py
-        │       ├── prime_ray_trainer.py
-        │       └── run_prime_qwen.sh
-        ├── requirements_sglang.txt
-        ├── requirements.txt
-        ├── scripts
-        │   ├── format.sh
-        │   └── model_merger.py
-        ├── setup.py
-        ├── tests
-        │   ├── __init__.py
-        │   ├── checkpoint
-        │   │   ├── run_deepseek_megatron_ckpt.sh
-        │   │   ├── run_qwen_megatron_ckpt.sh
-        │   │   └── test_fsdp_ckpt.py
-        │   ├── distributed
-        │   │   ├── run_all.sh
-        │   │   └── test_tensor_dict.py
-        │   ├── e2e
-        │   │   ├── __init__.py
-        │   │   ├── arithmetic_sequence
-        │   │   │   ├── data
-        │   │   │   │   ├── create_dataset.py
-        │   │   │   │   ├── test.parquet
-        │   │   │   │   └── train.parquet
-        │   │   │   ├── model
-        │   │   │   │   ├── config.json
-        │   │   │   │   ├── create_model_tokenizer.py
-        │   │   │   │   ├── generation_config.json
-        │   │   │   │   ├── model.safetensors
-        │   │   │   │   └── tokenizer_config.json
-        │   │   │   └── rl
-        │   │   │       ├── main_trainer.py
-        │   │   │       └── README.md
-        │   │   ├── check_custom_rwd_fn.py
-        │   │   ├── check_results.py
-        │   │   ├── envs
-        │   │   │   ├── __init__.py
-        │   │   │   └── digit_completion
-        │   │   │       ├── __init__.py
-        │   │   │       ├── task.py
-        │   │   │       └── tokenizer.py
-        │   │   ├── run_deepseek_grpo_megatron.sh
-        │   │   ├── run_deepseek_grpo.sh
-        │   │   ├── run_deepseek_megatron_parallelism.sh
-        │   │   ├── run_deepseek_megatron.sh
-        │   │   ├── run_qwen_grpo_megatron.sh
-        │   │   ├── run_qwen_grpo.sh
-        │   │   ├── run_qwen_gsm8k_custom_function_rm.sh
-        │   │   ├── run_qwen_gsm8k_function_rm_both_kl.sh
-        │   │   ├── run_qwen_gsm8k_function_rm_grpo.sh
-        │   │   ├── run_qwen_gsm8k_function_rm_no_rmpad.sh
-        │   │   ├── run_qwen_gsm8k_function_rm_remax.sh
-        │   │   ├── run_qwen_gsm8k_function_rm.sh
-        │   │   ├── run_qwen_gsm8k_model_rm_liger_kernel.sh
-        │   │   ├── run_qwen_gsm8k_model_rm_no_rmpad.sh
-        │   │   ├── run_qwen_gsm8k_model_rm_seq_balance.sh
-        │   │   ├── run_qwen_gsm8k_model_rm_ulysses.sh
-        │   │   ├── run_qwen_gsm8k_model_rm.sh
-        │   │   ├── run_qwen_gsm8k_prime.sh
-        │   │   ├── run_qwen_megatron_parallelism.sh
-        │   │   ├── run_qwen_megatron.sh
-        │   │   ├── run_qwen2vl_geo3k_function_rm.sh
-        │   │   ├── run_ray_trainer_fire_sampling.sh
-        │   │   ├── run_ray_trainer_rmpad.sh
-        │   │   └── run_ray_trainer.sh
-        │   ├── generation
-        │   │   └── run_gen_qwen05.sh
-        │   ├── gpu_utility
-        │   │   ├── test_memory_buffers.py
-        │   │   ├── test_ops.py
-        │   │   └── test_torch_functional.py
-        │   ├── kill_github_tests.sh
-        │   ├── model
-        │   │   ├── test_transformer.py
-        │   │   └── test_transformers_ulysses.py
-        │   ├── ray
-        │   │   ├── check_worker_alive
-        │   │   │   └── main.py
-        │   │   ├── detached_worker
-        │   │   │   ├── client.py
-        │   │   │   ├── README.md
-        │   │   │   ├── run.sh
-        │   │   │   └── server.py
-        │   │   ├── test_check_worker_alive.py
-        │   │   ├── test_colocated_workers.py
-        │   │   ├── test_data_transfer.py
-        │   │   ├── test_driverfunc_to_worker.py
-        │   │   ├── test_high_level_scheduling_api.py
-        │   │   ├── test_ray_local_envs.py
-        │   │   ├── test_rvdz.py
-        │   │   ├── test_worker_group_basics.py
-        │   │   └── test_worker_group_torch.py
-        │   ├── rollout
-        │   │   ├── run_fsdp_vllm.py
-        │   │   ├── test_sglang_spmd.py
-        │   │   ├── test_vllm_hf_loader.py
-        │   │   └── test_vllm_spmd.py
-        │   ├── sandbox
-        │   │   └── test_sandbox.py
-        │   ├── sanity
-        │   │   ├── check_license.py
-        │   │   └── test_import.py
-        │   ├── sft
-        │   │   ├── run_sft_qwen05_peft.sh
-        │   │   ├── run_sft_qwen05_sp2_liger.sh
-        │   │   ├── run_sft_sp_loss_match.sh
-        │   │   ├── run_sft.sh
-        │   │   └── test_sp_loss_match.py
-        │   ├── utility
-        │   │   └── test_tensor_dict_utilities.py
-        │   └── verl
-        │       └── utils
-        │           └── dataset
-        │               ├── test_rl_dataset.py
-        │               ├── test_rm_dataset.py
-        │               └── test_sft_dataset.py
-        └── verl
-            ├── __init__.py
-            ├── models
-            │   ├── __init__.py
-            │   ├── llama
-            │   │   ├── __init__.py
-            │   │   └── megatron
-            │   │       ├── __init__.py
-            │   │       ├── checkpoint_utils
-            │   │       │   ├── __init__.py
-            │   │       │   ├── llama_loader_depracated.py
-            │   │       │   ├── llama_loader.py
-            │   │       │   └── llama_saver.py
-            │   │       ├── layers
-            │   │       │   ├── __init__.py
-            │   │       │   ├── parallel_attention.py
-            │   │       │   ├── parallel_decoder.py
-            │   │       │   ├── parallel_linear.py
-            │   │       │   ├── parallel_mlp.py
-            │   │       │   └── parallel_rmsnorm.py
-            │   │       └── modeling_llama_megatron.py
-            │   ├── mcore
-            │   │   ├── __init__.py
-            │   │   ├── gpt_model.py
-            │   │   ├── loader.py
-            │   │   └── saver.py
-            │   ├── qwen2
-            │   │   ├── __init__.py
-            │   │   └── megatron
-            │   │       ├── __init__.py
-            │   │       ├── checkpoint_utils
-            │   │       │   ├── __init__.py
-            │   │       │   ├── qwen2_loader_depracated.py
-            │   │       │   ├── qwen2_loader.py
-            │   │       │   └── qwen2_saver.py
-            │   │       ├── layers
-            │   │       │   ├── __init__.py
-            │   │       │   ├── parallel_attention.py
-            │   │       │   ├── parallel_decoder.py
-            │   │       │   ├── parallel_linear.py
-            │   │       │   ├── parallel_mlp.py
-            │   │       │   └── parallel_rmsnorm.py
-            │   │       └── modeling_qwen2_megatron.py
-            │   ├── README.md
-            │   ├── registry.py
-            │   ├── transformers
-            │   │   ├── __init__.py
-            │   │   ├── llama.py
-            │   │   ├── monkey_patch.py
-            │   │   ├── qwen2_vl.py
-            │   │   └── qwen2.py
-            │   └── weight_loader_registry.py
-            ├── protocol.py
-            ├── single_controller
-            │   ├── __init__.py
-            │   ├── base
-            │   │   ├── __init__.py
-            │   │   ├── decorator.py
-            │   │   ├── megatron
-            │   │   │   ├── __init__.py
-            │   │   │   ├── worker_group.py
-            │   │   │   └── worker.py
-            │   │   ├── register_center
-            │   │   │   ├── __init__.py
-            │   │   │   └── ray.py
-            │   │   ├── worker_group.py
-            │   │   └── worker.py
-            │   └── ray
-            │       ├── __init__.py
-            │       ├── base.py
-            │       └── megatron.py
-            ├── third_party
-            │   ├── __init__.py
-            │   ├── sglang
-            │   │   ├── __init__.py
-            │   │   └── parallel_state.py
-            │   └── vllm
-            │       ├── __init__.py
-            │       ├── vllm_v_0_3_1
-            │       │   ├── __init__.py
-            │       │   ├── arg_utils.py
-            │       │   ├── config.py
-            │       │   ├── llm_engine_sp.py
-            │       │   ├── llm.py
-            │       │   ├── model_loader.py
-            │       │   ├── model_runner.py
-            │       │   ├── parallel_state.py
-            │       │   ├── tokenizer.py
-            │       │   ├── weight_loaders.py
-            │       │   └── worker.py
-            │       ├── vllm_v_0_4_2
-            │       │   ├── __init__.py
-            │       │   ├── arg_utils.py
-            │       │   ├── config.py
-            │       │   ├── dtensor_weight_loaders.py
-            │       │   ├── hf_weight_loader.py
-            │       │   ├── llm_engine_sp.py
-            │       │   ├── llm.py
-            │       │   ├── megatron_weight_loaders.py
-            │       │   ├── model_loader.py
-            │       │   ├── model_runner.py
-            │       │   ├── parallel_state.py
-            │       │   ├── spmd_gpu_executor.py
-            │       │   ├── tokenizer.py
-            │       │   └── worker.py
-            │       ├── vllm_v_0_5_4
-            │       │   ├── __init__.py
-            │       │   ├── arg_utils.py
-            │       │   ├── config.py
-            │       │   ├── dtensor_weight_loaders.py
-            │       │   ├── hf_weight_loader.py
-            │       │   ├── llm_engine_sp.py
-            │       │   ├── llm.py
-            │       │   ├── megatron_weight_loaders.py
-            │       │   ├── model_loader.py
-            │       │   ├── model_runner.py
-            │       │   ├── parallel_state.py
-            │       │   ├── spmd_gpu_executor.py
-            │       │   ├── tokenizer.py
-            │       │   └── worker.py
-            │       └── vllm_v_0_6_3
-            │           ├── __init__.py
-            │           ├── arg_utils.py
-            │           ├── config.py
-            │           ├── dtensor_weight_loaders.py
-            │           ├── hf_weight_loader.py
-            │           ├── llm_engine_sp.py
-            │           ├── llm.py
-            │           ├── megatron_weight_loaders.py
-            │           ├── model_loader.py
-            │           ├── model_runner.py
-            │           ├── parallel_state.py
-            │           ├── spmd_gpu_executor.py
-            │           ├── tokenizer.py
-            │           └── worker.py
-            ├── trainer
-            │   ├── __init__.py
-            │   ├── config
-            │   │   ├── evaluation.yaml
-            │   │   ├── generation.yaml
-            │   │   ├── ppo_megatron_trainer.yaml
-            │   │   ├── ppo_trainer.yaml
-            │   │   └── sft_trainer.yaml
-            │   ├── fsdp_sft_trainer.py
-            │   ├── main_eval.py
-            │   ├── main_generation.py
-            │   ├── main_ppo.py
-            │   ├── ppo
-            │   │   ├── __init__.py
-            │   │   ├── core_algos.py
-            │   │   ├── metric_utils.py
-            │   │   └── ray_trainer.py
-            │   └── runtime_env.yaml
-            ├── utils
-            │   ├── __init__.py
-            │   ├── checkpoint
-            │   │   ├── __init__.py
-            │   │   ├── checkpoint_manager.py
-            │   │   ├── fsdp_checkpoint_manager.py
-            │   │   └── megatron_checkpoint_manager.py
-            │   ├── config.py
-            │   ├── dataset
-            │   │   ├── __init__.py
-            │   │   ├── README.md
-            │   │   ├── rl_dataset.py
-            │   │   ├── rm_dataset.py
-            │   │   └── sft_dataset.py
-            │   ├── debug
-            │   │   ├── __init__.py
-            │   │   ├── performance.py
-            │   │   └── trajectory_tracker.py
-            │   ├── distributed.py
-            │   ├── flops_counter.py
-            │   ├── fs.py
-            │   ├── fsdp_utils.py
-            │   ├── hdfs_io.py
-            │   ├── import_utils.py
-            │   ├── logger
-            │   │   ├── __init__.py
-            │   │   └── aggregate_logger.py
-            │   ├── logging_utils.py
-            │   ├── megatron
-            │   │   ├── __init__.py
-            │   │   ├── memory.py
-            │   │   ├── optimizer.py
-            │   │   ├── pipeline_parallel.py
-            │   │   ├── sequence_parallel.py
-            │   │   └── tensor_parallel.py
-            │   ├── megatron_utils.py
-            │   ├── memory_buffer.py
-            │   ├── model.py
-            │   ├── py_functional.py
-            │   ├── ray_utils.py
-            │   ├── rendezvous
-            │   │   ├── __init__.py
-            │   │   └── ray_backend.py
-            │   ├── reward_score
-            │   │   ├── __init__.py
-            │   │   ├── contextual_integrity_reward.py
-            │   │   ├── geo3k.py
-            │   │   ├── gsm8k.py
-            │   │   ├── math_verify.py
-            │   │   ├── math.py
-            │   │   ├── prime_code
-            │   │   │   ├── __init__.py
-            │   │   │   ├── testing_util.py
-            │   │   │   └── utils.py
-            │   │   └── prime_math
-            │   │       ├── __init__.py
-            │   │       ├── grader.py
-            │   │       └── math_normalize.py
-            │   ├── seqlen_balancing.py
-            │   ├── tokenizer.py
-            │   ├── torch_dtypes.py
-            │   ├── torch_functional.py
-            │   ├── tracking.py
-            │   └── ulysses.py
-            ├── version
-            │   └── version
-            └── workers
-                ├── __init__.py
-                ├── actor
-                │   ├── __init__.py
-                │   ├── base.py
-                │   ├── dp_actor.py
-                │   └── megatron_actor.py
-                ├── critic
-                │   ├── __init__.py
-                │   ├── base.py
-                │   ├── dp_critic.py
-                │   └── megatron_critic.py
-                ├── fsdp_workers.py
-                ├── megatron_workers.py
-                ├── reward_manager
-                │   ├── __init__.py
-                │   ├── naive.py
-                │   └── prime.py
-                ├── reward_model
-                │   ├── __init__.py
-                │   ├── base.py
-                │   └── megatron
-                │       ├── __init__.py
-                │       └── reward_model.py
-                ├── rollout
-                │   ├── __init__.py
-                │   ├── base.py
-                │   ├── hf_rollout.py
-                │   ├── naive
-                │   │   ├── __init__.py
-                │   │   └── naive_rollout.py
-                │   ├── sglang_rollout
-                │   │   ├── __init__.py
-                │   │   └── sglang_rollout.py
-                │   ├── tokenizer.py
-                │   └── vllm_rollout
-                │       ├── __init__.py
-                │       ├── fire_vllm_rollout.py
-                │       ├── vllm_rollout_spmd.py
-                │       └── vllm_rollout.py
-                └── sharding_manager
-                    ├── __init__.py
-                    ├── base.py
-                    ├── fsdp_sglang.py
-                    ├── fsdp_ulysses.py
-                    ├── fsdp_vllm.py
-                    └── megatron_vllm.py
+
+The data generation script creates concrete task examples from CI seeds. Each example includes a user task, available information, and annotations indicating which snippets are allowed or disallowed to share.
+
+The public dataset is available here:
+
+```text
+https://huggingface.co/datasets/huseyinatahaninan/ContextualIntegritySyntheticDataset
 ```
+
+### 2. PrivacyLens evaluation
+
+PrivacyLens-related data construction and evaluation code is under:
+
+```text
+posttraining-research-ci-supp/components/privacylens/
+```
+
+This component is used to evaluate whether assistant outputs or actions leak private information in contextual privacy scenarios.
+
+The Azure ML experiment configuration is located at:
+
+```text
+posttraining-research-ci-supp/experiments/privacylens.yaml
+```
+
+### 3. RL training
+
+RL training code and instructions are under:
+
+```text
+posttraining-research-ci-supp/components/training/
+```
+
+The training setup uses [`verl`](https://github.com/volcengine/verl) with small modifications, including the contextual-integrity reward function.
+
+The main training script is:
+
+```text
+posttraining-research-ci-supp/components/training/run_rl_for_contextual_integrity.sh
+```
+
+The provided script trains with GRPO-style optimization through `verl.trainer.main_ppo`.
+
+---
+
+## Installation
+
+Clone this repository:
+
+```bash
+git clone https://github.com/EricGLan/CI-RL.git
+cd CI-RL
+```
+
+Create a Python environment:
+
+```bash
+conda create -n ci-rl python=3.10 -y
+conda activate ci-rl
+```
+
+Install general dependencies for the PrivacyLens and data components:
+
+```bash
+cd posttraining-research-ci-supp
+pip install -r components/privacylens/requirements.txt
+```
+
+Some experiments use Azure ML and Azure OpenAI. Make sure your Azure credentials and API keys are configured if you want to reproduce the data generation or Azure ML jobs.
+
+Typical environment variables include:
+
+```bash
+export AZURE_OPENAI_ENDPOINT="your_azure_openai_endpoint"
+export AZURE_OPENAI_API_KEY="your_azure_openai_api_key"
+```
+
+---
+
+## Data
+
+### Public synthetic dataset
+
+The synthetic CI dataset can be downloaded from Hugging Face:
+
+```text
+https://huggingface.co/datasets/huseyinatahaninan/ContextualIntegritySyntheticDataset
+```
+
+The dataset is designed to test whether an assistant discloses only contextually appropriate information. Each example contains:
+
+* a realistic user task
+* a set of available information items
+* annotations for allowed and disallowed information
+* short unique identifiers for leakage checking
+
+### Generating new synthetic data
+
+The script for generating new examples from CI seeds is:
+
+```text
+posttraining-research-ci-supp/datasets/synthetic/generate_new_data_from_seeds.py
+```
+
+This script uses Azure OpenAI to transform CI seeds into concrete examples.
+
+Run from the synthetic data directory:
+
+```bash
+cd posttraining-research-ci-supp/datasets/synthetic
+python generate_new_data_from_seeds.py
+```
+
+Before running, ensure that:
+
+1. `seeds_for_CI_dataset.json` exists in the same directory.
+2. Azure OpenAI credentials are configured.
+3. The model name in the script is available in your Azure OpenAI deployment.
+
+---
+
+## PrivacyLens Evaluation
+
+The PrivacyLens experiment configuration is:
+
+```text
+posttraining-research-ci-supp/experiments/privacylens.yaml
+```
+
+The `cot` option enables chain-of-thought prompting for contextual-integrity reasoning.
+
+To launch the Azure ML job:
+
+```bash
+cd posttraining-research-ci-supp
+az ml job create -f experiments/privacylens.yaml --web
+```
+
+The evaluation code includes utilities for:
+
+* constructing PrivacyLens-style trajectories
+* extracting assistant final actions
+* evaluating whether final actions leak private information
+* probing model behavior under CI-related tasks
+
+Relevant paths:
+
+```text
+posttraining-research-ci-supp/components/privacylens/data_construction/
+posttraining-research-ci-supp/components/privacylens/evaluation/
+posttraining-research-ci-supp/components/privacylens/helper/
+```
+
+---
+
+## RL Training
+
+The RL training component uses `verl`.
+
+### Step 1: Clone `verl`
+
+```bash
+cd posttraining-research-ci-supp/components/training
+git clone https://github.com/volcengine/verl.git
+cd verl
+```
+
+### Step 2: Apply the CI modifications
+
+```bash
+git apply ../changes.diff
+```
+
+The patch adds the reward function and other modifications needed for contextual-integrity RL.
+
+### Step 3: Install `verl`
+
+Follow the official `verl` installation instructions. A typical editable install is:
+
+```bash
+pip install -e .
+```
+
+Depending on your machine and CUDA setup, you may also need to install additional dependencies for `vLLM`, `Ray`, `FSDP`, or Megatron support.
+
+### Step 4: Run RL training
+
+From inside the cloned `verl` directory:
+
+```bash
+bash ../run_rl_for_contextual_integrity.sh
+```
+
+The default script uses:
+
+* model: `Qwen/Qwen2.5-3B-Instruct`
+* algorithm advantage estimator: `grpo`
+* rollout backend: `vllm`
+* number of rollout samples: `16`
+* GPUs per node: `8`
+* logger: console and Weights & Biases
+* project name: `contextual_integrity`
+
+You can override arguments by appending them to the script call. For example:
+
+```bash
+bash ../run_rl_for_contextual_integrity.sh \
+  trainer.n_gpus_per_node=4 \
+  trainer.total_epochs=20 \
+  trainer.logger=['console']
+```
+
+---
+
+## Released Checkpoint
+
+We release a checkpoint trained from Qwen2.5-7B-Instruct:
+
+```text
+https://huggingface.co/huseyinatahaninan/Qwen2.5-7B-Instruct-CI
+```
+
+You can load the checkpoint with Hugging Face Transformers:
+
+```python
+from transformers import AutoModelForCausalLM, AutoTokenizer
+
+model_name = "huseyinatahaninan/Qwen2.5-7B-Instruct-CI"
+
+tokenizer = AutoTokenizer.from_pretrained(model_name)
+model = AutoModelForCausalLM.from_pretrained(
+    model_name,
+    device_map="auto",
+    torch_dtype="auto",
+)
+```
+
+---
+
+## Example Use Case
+
+A contextual-integrity example asks the assistant to complete a task using available user information.
+
+The assistant may see information such as:
+
+```text
+Task: Reply to the hotel staff and confirm my reservation.
+
+Available information:
+- Name: Alex Chen
+- Check-in date: June 18
+- Room type: king room
+- Medical note: insulin schedule
+```
+
+A contextually appropriate assistant should share information needed for the hotel reservation, such as the name, check-in date, and room type, while avoiding unrelated or inappropriate disclosure such as the medical note.
+
+The key challenge is that disallowed information is not labeled as private in the prompt. The assistant must infer appropriateness from the context.
+
+---
+
+## Paper Summary
+
+This work studies how to reduce privacy leakage in LLM agents by improving their contextual reasoning. The core ideas are:
+
+1. **Reasoning for contextual integrity**
+   Prompt models to explicitly reason about whether each information flow is appropriate for the given task and context.
+
+2. **Synthetic CI training data**
+   Create a compact but diverse dataset of CI scenarios covering domains such as healthcare, finance, work, education, hospitality, family, friends, government, entertainment, and e-commerce.
+
+3. **Reinforcement learning for CI behavior**
+   Use RL to train models to avoid inappropriate information disclosure while still completing the requested task.
+
+4. **Transfer to external benchmarks**
+   Evaluate whether improvements transfer from the synthetic dataset to PrivacyLens, an external benchmark with human annotations for privacy leakage in assistant behavior.
+
+---
+
+## External Links
+
+* Paper: [https://arxiv.org/abs/2506.04245](https://arxiv.org/abs/2506.04245)
+* NeurIPS 2025 OpenReview: [https://openreview.net/forum?id=Xm57IXqU0n](https://openreview.net/forum?id=Xm57IXqU0n)
+* Hugging Face paper page: [https://huggingface.co/papers/2506.04245](https://huggingface.co/papers/2506.04245)
+* Synthetic dataset: [https://huggingface.co/datasets/huseyinatahaninan/ContextualIntegritySyntheticDataset](https://huggingface.co/datasets/huseyinatahaninan/ContextualIntegritySyntheticDataset)
+* Released checkpoint: [https://huggingface.co/huseyinatahaninan/Qwen2.5-7B-Instruct-CI](https://huggingface.co/huseyinatahaninan/Qwen2.5-7B-Instruct-CI)
+* Microsoft Research blog: [https://www.microsoft.com/en-us/research/blog/reducing-privacy-leaks-in-ai-two-approaches-to-contextual-integrity/](https://www.microsoft.com/en-us/research/blog/reducing-privacy-leaks-in-ai-two-approaches-to-contextual-integrity/)
+
+---
+
+## Citation
+
+If you find this repository useful, please cite our paper:
+
+```bibtex
+@inproceedings{lan2026contextual,
+title={Contextual Integrity in {LLM}s via Reasoning and Reinforcement Learning},
+author={Guangchen Lan and Huseyin A Inan and Sahar Abdelnabi and Janardhan Kulkarni and Lukas Wutschitz and Reza Shokri and Christopher Brinton and Robert Sim},
+booktitle={The Thirty-ninth Annual Conference on Neural Information Processing Systems (NeurIPS)},
+year={2026}
+}
+```
+
+---
+
+## License
+
+This repository is released under the Apache-2.0 License. See [LICENSE](LICENSE) for details.
+
+---
+
+## Acknowledgements
+
+This repository builds on the `verl` reinforcement-learning framework and uses PrivacyLens-style contextual privacy evaluation. We thank the authors and maintainers of the open-source tools and benchmarks that made this work possible.
